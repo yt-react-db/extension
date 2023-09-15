@@ -88,6 +88,8 @@ chrome.runtime.onMessage.addListener(
             };
             const iconPath = getPermissionsIconPath(info);
             chrome.action.setIcon({ path: iconPath });
+        } else if (request?.state === "error") {
+            // TODO: show icon + message
         }
     }
 );

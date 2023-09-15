@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "yt-react-db extension",
   "description": "yt-react-db extension",
-  "version": "1.0",
+  "version": "0.1.0",
   "icons": {
     "16": "images/icon-16.png",
     "32": "images/icon-32.png",
@@ -26,7 +26,7 @@
         "scripts/content.js"
       ],
       "matches": [
-        "*://www.youtube.com/watch?v=*"
+        "*://www.youtube.com/*"
       ]
     }
   ],
