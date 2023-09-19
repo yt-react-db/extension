@@ -2,8 +2,12 @@ const popup = document.getElementById("yt-react-db-ext-div");
 
 chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
-        console.log("yooooooooooooooooooooooo", request);
-        popup.innerText = request.channelID;
+        console.log(request)
+        if (request?.state === "error") {
+            popup.innerHTML = request.message;
+        } else {
+            popup.innerText = request.channelID;
+        }
     }
 );
 

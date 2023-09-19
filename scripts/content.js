@@ -15,10 +15,27 @@ function error(message) {
     console.error("%c[yt-react-db]%c", "background-image: linear-gradient(to right, rgb(220, 38, 38), rgb(234, 179, 8)); background-clip:text; text-fill-color: transparent; -webkit-background-clip: text; -webkit-background-clip: text; color: black", "", message);
 }
 
-function getPublicationDate() {
-    return document.querySelector('meta[itemprop="datePublished"]').content;
+
+function getVideoPlayer() {
+    return document.querySelector("#ytd-player video");
 }
 
+function getPublicationDateElement() {
+    return document.querySelector('meta[itemprop="datePublished"]');
+    document.querySelector("#info-strings > yt-formatted-string").innerText
+}
+
+function getPublicationDate() {
+    return getPublicationDateElement().content;
+}
+
+async function sendErrorMessage(message) {
+    error(message);
+    await chrome.runtime.sendMessage({
+        state: "error",
+        message: "An error occured: " + message,
+    });
+}
 
 function channelIDProcessing(element) {
 
@@ -39,15 +56,17 @@ function channelIDProcessing(element) {
         (async () => {
 
             log("fetching permissions for channel ", channelID);
-            const resPermissions = await fetch("http://localhost:8080/permissions/" + channelID);
+            let resPermissions;
+            try {
+                resPermissions = await fetch("http://localhost:8080/permissions/" + channelID);
+            } catch (e) {
+                sendErrorMessage("Could not fetch information")
+                return;
+            }
 
             if (!resPermissions.ok && resPermissions.status !== 404) {
-                error("An error occured while fetching permissions");
-                // 
-                await chrome.runtime.sendMessage({
-                    state: "error",
-                    message: ""
-                });
+                sendErrorMessage("An error occured while fetching permissions");
+                return;
             }
 
             /*
@@ -99,6 +118,7 @@ function channelIDProcessing(element) {
  * 
  */
 function processing() {
+    log("processing")
 
     // if not a video, we can stop right there
     if (!window.location.href.startsWith("https://www.youtube.com/watch?v=")) {
@@ -115,10 +135,20 @@ function processing() {
     // - yt-button-shape > a
     // which contains href with something like: https://www.youtube.com/channel/<channelID>/videos'
 
-    // if element isn't loaded yet, try again later
-    if (!element) {
-        log(`Attempt #${NB_ATTEMPTS} failed, trying again`);
-        setTimeout(processing, 1000);
+    // making sure every useful elements are loaded, if not, try again later
+    const isElementMissing = !element;
+    const isPublicationDateElementMissing = !getPublicationDateElement();
+    const isVideoPlayerMissing = !getVideoPlayer()
+    if (isElementMissing || isPublicationDateElementMissing || isVideoPlayerMissing) {
+
+        // weird behavior, when you go from youtube home page to a video,
+        // the publication date is missing, and never loads
+        log(`Attempt #${NB_ATTEMPTS} failed:
+          element missing: ${isElementMissing},
+          publication date missing: ${isPublicationDateElementMissing},
+          video player missing: ${isVideoPlayerMissing},
+          trying again`);
+        setTimeout(processing, 1000 * (1 + Math.log(NB_ATTEMPTS)));
         return;
     }
 
@@ -128,7 +158,8 @@ function processing() {
     let elementObserver = new MutationObserver((mr) => {
         log("element mutation observer triggered");
         channelIDProcessing(element);
-    }).observe(element, { attributeFilter: ["href"] });
+    });
+    elementObserver.observe(element, { attributeFilter: ["href"] });
 
     /*
     // observe when video player is deleted,
@@ -167,17 +198,27 @@ function processing() {
 
             observeUrl();
 
-            log("removing element observer");
             // no need to listen to the element
-            elementObserver.disconnect();
+            try {
+                log("removing element observer");
+                elementObserver.disconnect();
+            } catch (e) {
+                error(e);
+            }
 
-            log("removing video observer");
             // now we need to detect when user starts watching a video
-            videoObserver.disconnect();
+            try {
+                log("removing video observer");
+                videoObserver.disconnect();
+            } catch (e) {
+                error(e);
+            }
 
+            chrome.runtime.sendMessage({ state: "default" });
 
         }
-    }).observe(document.querySelector("#ytd-player video"), { attributeFilter: ["src"] })
+    });
+    videoObserver.observe(getVideoPlayer(), { attributeFilter: ["src"] });
     channelIDProcessing(element);
 
 }
@@ -191,13 +232,13 @@ function observeUrl() {
     log("observing url");
 
     const urlObserver = new MutationObserver(() => {
-        log("url changed");
 
         const currentUrl = window.location.href;
         if (url === currentUrl) {
             return;
         }
 
+        log("url changed");
         if (!isUrlOfVideo()) {
             return;
         }
