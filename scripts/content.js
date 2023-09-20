@@ -22,11 +22,20 @@ function getVideoPlayer() {
 
 function getPublicationDateElement() {
     return document.querySelector('meta[itemprop="datePublished"]');
-    document.querySelector("#info-strings > yt-formatted-string").innerText
+}
+
+function getPublicationDateElement2() {
+    return document.querySelector("#info-strings > yt-formatted-string"); // innerText
 }
 
 function getPublicationDate() {
-    return getPublicationDateElement().content;
+    const elem = getPublicationDateElement();
+
+    // this element can be missing, so instead of failing, we put a fake value
+    // hopefully, we don't need it!
+    if (!elem) return "0000-00-00"; // TODO: find a fix
+
+    return elem.content;
 }
 
 async function sendErrorMessage(message) {
@@ -135,11 +144,22 @@ function processing() {
     // - yt-button-shape > a
     // which contains href with something like: https://www.youtube.com/channel/<channelID>/videos'
 
+
+
+    // ----------------------------------------------------------------
     // making sure every useful elements are loaded, if not, try again later
-    const isElementMissing = !element;
     const isPublicationDateElementMissing = !getPublicationDateElement();
+    const isElementMissing = !element;
     const isVideoPlayerMissing = !getVideoPlayer()
-    if (isElementMissing || isPublicationDateElementMissing || isVideoPlayerMissing) {
+
+    if (isPublicationDateElementMissing && NB_ATTEMPTS > 3 && !isElementMissing && !isVideoPlayerMissing) {
+        // for some reason, when you start from the home page,
+        // the meta tag containing the publication date isn't present,
+        // so for now, I am not going to waste more time trying to find a fix
+        // and just ignore it, and return a default fake value in getPublicationDate()
+        // TODO: find a better way
+        log("The meta tag containing the publication date isn't present");
+    } else if (isElementMissing || isPublicationDateElementMissing || isVideoPlayerMissing) {
 
         // weird behavior, when you go from youtube home page to a video,
         // the publication date is missing, and never loads
@@ -151,6 +171,7 @@ function processing() {
         setTimeout(processing, 1000 * (1 + Math.log(NB_ATTEMPTS)));
         return;
     }
+
 
 
     log("observing element")

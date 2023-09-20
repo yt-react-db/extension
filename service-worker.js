@@ -30,8 +30,9 @@ function hasDelayPassed(delay, publishedDate) {
 
 
 function getColorWhenDelay(delay, publishedDate) {
-
-    if (hasDelayPassed(delay, publishedDate)) {
+    if (publishedDate === "0000-00-00") { // if couldn't get publication Date
+        return "white";
+    } else if (hasDelayPassed(delay, publishedDate)) {
         return "green";
     } else {
         return "orange";
@@ -83,7 +84,7 @@ chrome.runtime.onMessage.addListener(
             log("loaded")
             const info = {
                 channelID: request.channelID,
-                publishedDate: request.published_date,
+                publishedDate: request.publishedDate,
                 permissions: request.permissions,
             };
             const iconPath = getPermissionsIconPath(info);
