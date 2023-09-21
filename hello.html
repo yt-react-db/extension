@@ -1,10 +1,36 @@
 <!DOCTYPE html>
 <html>
+<style>
+  body {
+    min-width: 300px
+  }
+</style>
 
 <body>
-  <h1>Hello</h1>
-  <h1>two</h1>
+  <h1>yt-react-db</h1>
   <div id="yt-react-db-ext-div"></div>
+  <div id="caption">
+    <h3>how to read the icon?</h3>
+    <p>Icon is split vertically in 2.</p>
+    <ul>
+      <li>left: can react live?</li>
+      <li>right: can upload reaction?</li>
+    </ul>
+    <p>Color meaning:</p>
+    <ul>
+      <li>green: yes</li>
+      <li>orange: no, delay hasn't passed yet</li>
+      <li>red: no</li>
+      <li>white: unable to tell</li>
+    </ul>
+    <p>Other types of icons:</p>
+    <ul>
+      <li>question mark: yt-react-db doesn't have the permissions of this youtuber</li>
+      <li>loading</li>
+      <li>white X with red background: an error occured, please reload page</li>
+    </ul>
+
+  </div>
   <script src="./popup.js"></script>
 </body>
 

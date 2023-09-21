@@ -1,5 +1,5 @@
-function log(message) {
-    console.log("%c[yt-react-db]%c[service]%c", "background-image: linear-gradient(to right, rgb(220, 38, 38), rgb(234, 179, 8)); background-clip:text; text-fill-color: transparent; -webkit-background-clip: text; -webkit-background-clip: text; color: black", "background-color: white; color: black", "", message);
+function log(...message) {
+    console.log("%c[yt-react-db]%c[service]%c", "background-image: linear-gradient(to right, rgb(220, 38, 38), rgb(234, 179, 8)); background-clip:text; text-fill-color: transparent; -webkit-background-clip: text; -webkit-background-clip: text; color: black", "background-color: white; color: black", "", ...message);
 }
 
 /**
@@ -73,7 +73,32 @@ function getPermissionsIconPath({ permissions, publishedDate }) {
     return "images/" + canReactLiveColor + "-" + canUploadReactionColor + ".png";
 }
 
+
 chrome.runtime.onMessage.addListener(
+    /**
+     * 
+     * (ok typescript would be nice here)
+     * request looks this:
+     * {
+     *   state: string,
+     *   channelID: string,
+     *   url: string,
+     *   publishedDate: string,
+     *   permissions: {...}
+     * }
+     * 
+     * and permissions is one of: 
+        - {message: 'Permission not found for given channel_ID'}
+        - {
+            "channel_id": "UCIv6GIlP5uXbiu666bOUobQ",
+            "channel_title": "ComputerBread",
+            "can_react_live": "yes",
+            "live_reaction_delay": "1d",
+            "can_upload_reaction": "yes",
+            "upload_reaction_delay": "1d",
+            "last_updated_at": "2023-09-05T15:30:49.004903Z"
+        }
+     */
     function (request, sender, sendResponse) {
         log(request)
         if (request?.state === "loading") {
@@ -87,8 +112,15 @@ chrome.runtime.onMessage.addListener(
                 publishedDate: request.publishedDate,
                 permissions: request.permissions,
             };
+
             const iconPath = getPermissionsIconPath(info);
             chrome.action.setIcon({ path: iconPath });
+
+            // store request in storage
+            let obj = {};
+            obj[request.url] = { ...request, iconPath };
+            chrome.storage.local.set(obj);
+
         } else if (request?.state === "error") {
             log("error")
             console.error(request.message);
@@ -99,4 +131,29 @@ chrome.runtime.onMessage.addListener(
     }
 );
 
-log("hello ????")
+
+// when active tab changes
+chrome.tabs.onActivated.addListener(() => {
+    log("tab changed?")
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+
+        // Access the URL of the current tab
+        const currentTabUrl = tabs[0].url;
+
+        log("Current tab URL:", currentTabUrl);
+        if (!currentTabUrl.startsWith("https://www.youtube.com/watch?v=")) {
+            chrome.action.setIcon({ path: "images/icon-16.png" });
+            return;
+        }
+
+        chrome.action.setIcon({ path: "images/load.png" });
+        chrome.storage.local.get([currentTabUrl]).then((res) => {
+            if (!res[currentTabUrl]) {
+                return;
+            }
+            chrome.action.setIcon({ path: res[currentTabUrl].iconPath });
+            // TODO: send info to popup.js
+        });
+
+    });
+});

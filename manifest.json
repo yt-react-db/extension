@@ -34,6 +34,8 @@
     "service_worker": "service-worker.js"
   },
   "permissions": [
-    "activeTab"
+    "activeTab",
+    "tabs",
+    "storage"
   ]
 }
