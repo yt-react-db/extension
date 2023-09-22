@@ -74,6 +74,17 @@ function getPermissionsIconPath({ permissions, publishedDate }) {
 }
 
 
+function setIcon(iconPath, tabId) {
+
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        if (tabs[0].id !== tabId) {
+            return;
+        }
+        chrome.action.setIcon({ path: iconPath });
+
+    });
+}
+
 chrome.runtime.onMessage.addListener(
     /**
      * 
@@ -103,8 +114,7 @@ chrome.runtime.onMessage.addListener(
         log(request)
         if (request?.state === "loading") {
             log("loading");
-            //chrome.action.setIcon({ path: "images/loading.png" });
-            chrome.action.setIcon({ path: "images/load.png" });
+            setIcon("images/load.png", sender.tab.id);
         } else if (request?.state === "loaded") {
             log("loaded")
             const info = {
@@ -114,17 +124,20 @@ chrome.runtime.onMessage.addListener(
             };
 
             const iconPath = getPermissionsIconPath(info);
-            chrome.action.setIcon({ path: iconPath });
 
+            // we change icon only if we are in the good tab
+            //!!!!!!!!!!!!!!!!!!!!!!!!!
+            setIcon(iconPath, sender.tab.id);
             // store request in storage
             let obj = {};
-            obj[request.url] = { ...request, iconPath };
-            chrome.storage.local.set(obj);
+            log("sender tab id", sender.tab.id)
+            obj[sender.tab.id] = { ...request, iconPath };
+            chrome.storage.session.set(obj, () => { log("stored?") });
 
         } else if (request?.state === "error") {
             log("error")
             console.error(request.message);
-            chrome.action.setIcon({ path: "images/error.png" });
+            setIcon("images/error.png", sender.tab.id);
         } else if (request?.state === "default") {
             chrome.action.setIcon({ path: "images/icon-16.png" });
         }
@@ -146,14 +159,24 @@ chrome.tabs.onActivated.addListener(() => {
             return;
         }
 
+        const tabId = tabs[0].id;
+
         chrome.action.setIcon({ path: "images/load.png" });
-        chrome.storage.local.get([currentTabUrl]).then((res) => {
-            if (!res[currentTabUrl]) {
+        chrome.storage.session.get(tabId.toString()).then((res) => {
+            log("res", res);
+            if (!res[tabId]) {
                 return;
             }
-            chrome.action.setIcon({ path: res[currentTabUrl].iconPath });
-            // TODO: send info to popup.js
+            chrome.action.setIcon({ path: res[tabId].iconPath });
+            // TODO: do I need to send info to popup.js?
         });
 
     });
+});
+
+// when tab is removed
+chrome.tabs.onRemoved.addListener((tabId) => {
+    log("Tab removed:", tabId);
+    // we remove info from storage
+    chrome.storage.session.remove(tabId.toString());
 });
