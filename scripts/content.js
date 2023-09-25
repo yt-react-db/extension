@@ -1,4 +1,5 @@
 // GLOBAL VARIABLES :) don't hurt anybody
+const BACKEND_URL = "http://localhost:8080/permissions/";
 // to count the number of attempts before being able to read the channelID
 let NB_ATTEMPTS = 0;
 
@@ -67,7 +68,7 @@ function channelIDProcessing(element) {
             log("fetching permissions for channel ", channelID);
             let resPermissions;
             try {
-                resPermissions = await fetch("http://localhost:8080/permissions/" + channelID);
+                resPermissions = await fetch(BACKEND_URL + channelID);
             } catch (e) {
                 sendErrorMessage("Could not fetch information")
                 return;
