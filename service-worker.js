@@ -76,6 +76,7 @@ function getPermissionsIconPath({ permissions, publishedDate }) {
 
 function setIcon(iconPath, tabId) {
 
+    log(iconPath)
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         if (tabs[0].id !== tabId) {
             return;
