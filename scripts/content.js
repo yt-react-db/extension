@@ -183,34 +183,6 @@ function processing() {
     });
     elementObserver.observe(element, { attributeFilter: ["href"] });
 
-    /*
-    // observe when video player is deleted,
-    // => user isn't watching a video anymore
-    let moviePlayerObserver = new MutationObserver((mutationList) => {
-        log("content mutation triggered")
-        for (let mutationRecord of mutationList) {
-            if (mutationRecord.removedNodes) {
-                for (let removedNode of mutationRecord.removedNodes) {
-                    log("content mutation ", removedNode.id);
-                    log(removedNode)
-                    if (removedNode.id === 'movie_player') {
-                        log("movie_player removed");
-
-                        log("removing element observer");
-                        // no need to listen to the element
-                        elementObserver.disconnect();
-                        // now we need to detect when user starts watching a video
-                        observeUrl();
-                        moviePlayerObserver.disconnect();
-                        return;
-                    }
-                }
-            }
-        }
-    }).observe(document.getElementById("movie_player"), { subtree: true, childList: true })
-    */
-    // #movie_player
-
     // observe when video[src] is emptied
     // => user isn't watching a video anymore
     let videoObserver = new MutationObserver((mutationList) => {
@@ -288,8 +260,6 @@ let url = window.location.href;
 
 // if not a video, we need to start listening to url changes
 if (!isUrlOfVideo()) {
-
-    log("not watching a video, observing url changes")
 
     observeUrl();
 
