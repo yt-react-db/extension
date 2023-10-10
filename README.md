@@ -1,6 +1,6 @@
 # yt-react-db web browser extension
 
-This is code repository for [yt-react-db.com](https://yt-react-db.com) web browser extension.
+This is the code repository for [yt-react-db.com](https://yt-react-db.com) web browser extension.
 Mainly tested on the "brave" web browser (which should be same behavior as google chrome).
 
 The goal of this extension is to help reactors (live streamers, youtubers & editors)
@@ -44,3 +44,10 @@ If you find a problem, please open a github issue at <https://github.com/yt-reac
 The following diagram (which is bad) gives an idea on how the extension works.
 
 ![diagram](./doc/diagram.svg)
+
+## Publishing
+
+Inside this directory, in a file manager:
+
+1. select the needed files
+2. right click > compress > zip

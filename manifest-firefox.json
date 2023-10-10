@@ -3,6 +3,12 @@
   "name": "yt-react-db extension",
   "description": "yt-react-db extension",
   "version": "0.1.0",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "addon@yt-react-db.com",
+      "strict_min_version": "115.0"
+    }
+  },
   "icons": {
     "16": "images/icon-16.png",
     "32": "images/icon-32.png",
