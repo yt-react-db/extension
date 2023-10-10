@@ -1,5 +1,6 @@
 // GLOBAL VARIABLES :) don't hurt anybody
-const BACKEND_URL = "http://localhost:8080/permissions/";
+//const BACKEND_URL = "http://localhost:8080/permissions/";
+const BACKEND_URL = "https://api.yt-react-db.com/permissions/";
 // to count the number of attempts before being able to read the channelID
 let NB_ATTEMPTS = 0;
 

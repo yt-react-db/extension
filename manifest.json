@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "yt-react-db extension",
+  "name": "yt-react-db",
   "description": "yt-react-db extension",
   "version": "0.1.0",
   "icons": {
